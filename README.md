@@ -70,3 +70,8 @@ The tests use an in-memory database, so they do not touch the real database. The
 ## Continuous integration
 
 Every push to `main` runs the GitHub Actions workflow (`.github/workflows/dotnet.yml`), which restores, builds and runs all tests.
+
+## CI Screenshot
+
+<img width="1518" height="787" alt="image" src="https://github.com/user-attachments/assets/21b8ba02-a02d-4fb2-b36a-67e6a8e2281b" />
+
