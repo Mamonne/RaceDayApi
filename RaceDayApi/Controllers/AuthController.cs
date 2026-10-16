@@ -34,7 +34,17 @@ namespace RaceDayApi.Controllers
                     return BadRequest("Password must be at least 6 characters.");
                 }
 
-                if (dto.Role != Roles.Organiser && dto.Role != Roles.Participant)
+                string roleInput = dto.Role.Trim().ToLower();
+
+                if (roleInput == "organiser")
+                {
+                    dto.Role = Roles.Organiser;
+                }
+                else if (roleInput == "participant")
+                {
+                    dto.Role = Roles.Participant;
+                }
+                else
                 {
                     return BadRequest("Role must be Organiser or Participant.");
                 }
