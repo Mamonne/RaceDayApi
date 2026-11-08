@@ -131,5 +131,29 @@ namespace RaceDayApi.Tests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
+        [Fact]
+        public async Task GetMyEvents_AsOrganiser_ReturnsOnlyTheirOwnEvents()
+        {
+            HttpClient first = await this.CreateLoggedInClient("first@test.com", "Organiser");
+            HttpClient second = await this.CreateLoggedInClient("second@test.com", "Organiser");
+            await this.CreateEvent(first);
+            await this.CreateEvent(second);
+
+            HttpResponseMessage response = await first.GetAsync("/api/events/mine");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            System.Text.Json.JsonElement list = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            Assert.Equal(1, list.GetArrayLength());
+        }
+
+        [Fact]
+        public async Task GetMyEvents_AsParticipant_Returns403()
+        {
+            HttpClient participant = await this.CreateLoggedInClient("part@test.com", "Participant");
+
+            HttpResponseMessage response = await participant.GetAsync("/api/events/mine");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
     }
 }

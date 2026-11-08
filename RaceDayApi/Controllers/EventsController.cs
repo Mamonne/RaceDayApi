@@ -216,6 +216,38 @@ namespace RaceDayApi.Controllers
             {
                 return StatusCode(500, "Something went wrong: " + ex.Message);
             }
+          }
+        // GET api/events/mine - Organiser's own events with enrolment counts
+        [HttpGet("mine")]
+        [SessionAuthorize(Roles.Organiser)]
+        public async Task<IActionResult> GetMyEvents()
+        {
+            try
+            {
+                int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+                var events = await this._context.Events
+                    .Where(e => e.OrganiserId == userId)
+                    .OrderBy(e => e.EventDate)
+                    .Select(e => new
+                    {
+                        eventId = e.EventId,
+                        eventName = e.EventName,
+                        eventDate = e.EventDate,
+                        location = e.Location,
+                        distance = e.Distance,
+                        eventType = e.EventType,
+                        bannerImageUrl = e.BannerImageUrl,
+                        totalEnrolments = this._context.Enrolments.Count(en => en.EventId == e.EventId)
+                    })
+                    .ToListAsync();
+
+                return Ok(events);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Something went wrong: " + ex.Message);
+            }
         }
     }
-}
+    }
