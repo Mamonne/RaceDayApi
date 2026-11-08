@@ -41,16 +41,44 @@ namespace RaceDayApi.Controllers
             }
         }
 
-        // GET api/events - all upcoming events (public)
+        // GET api/events - upcoming events, with optional filters (public)
         [HttpGet]
-        public async Task<IActionResult> GetEvents()
+        public async Task<IActionResult> GetEvents(string? search, string? eventType, decimal? minDistance, decimal? maxDistance)
         {
             try
             {
-                List<Event> events = await this._context.Events
-                    .Where(e => e.EventDate >= DateTime.Today)
-                    .OrderBy(e => e.EventDate)
-                    .ToListAsync();
+                IQueryable<Event> query = this._context.Events.Where(e => e.EventDate >= DateTime.Today);
+
+                if (string.IsNullOrWhiteSpace(search) == false)
+                {
+                    string text = search.Trim().ToLower();
+                    query = query.Where(e => e.EventName.ToLower().Contains(text) || e.Location.ToLower().Contains(text));
+                }
+
+                if (string.IsNullOrWhiteSpace(eventType) == false)
+                {
+                    string? validType = this.GetValidEventType(eventType);
+                    if (validType == null)
+                    {
+                        return BadRequest("Event type must be Running, Walking or Cycling.");
+                    }
+
+                    query = query.Where(e => e.EventType == validType);
+                }
+
+                if (minDistance != null)
+                {
+                    decimal min = minDistance.Value;
+                    query = query.Where(e => e.Distance >= min);
+                }
+
+                if (maxDistance != null)
+                {
+                    decimal max = maxDistance.Value;
+                    query = query.Where(e => e.Distance <= max);
+                }
+
+                List<Event> events = await query.OrderBy(e => e.EventDate).ToListAsync();
 
                 return Ok(events);
             }
