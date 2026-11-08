@@ -1,3 +1,5 @@
+using RaceDayMvc.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -10,6 +12,16 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+});
+
+builder.Services.AddHttpClient<ApiService>(client =>
+{
+    string baseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7130/";
+    client.BaseAddress = new Uri(baseUrl);
+})
+.ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+{
+    UseCookies = false   // we handle the API session cookie ourselves, one per user
 });
 
 var app = builder.Build();
