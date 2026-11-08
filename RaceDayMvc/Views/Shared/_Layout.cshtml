@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Http
+@{
+    string? navRole = Context.Session.GetString("Role");
+    string? navName = Context.Session.GetString("FullName");
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -23,9 +29,42 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @if (navRole == "Organiser")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Organiser" asp-action="Dashboard">Dashboard</a>
+                            </li>
+                        }
+                        else if (navRole == "Participant")
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Participant" asp-action="MyEnrolments">My Enrolments</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <ul class="navbar-nav">
+                        @if (navRole == null)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <span class="navbar-text me-3">@navName (@navRole)</span>
+                            </li>
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Log out</button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>
