@@ -1,0 +1,88 @@
+﻿@model RaceDayMvc.Models.EventDetailsViewModel
+@{
+    ViewData["Title"] = Model.Event != null ? Model.Event.EventName : "Event details";
+    string? role = Context.Session.GetString("Role");
+    var invariant = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.Event == null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Back to events</a>
+}
+else
+{
+    <a asp-controller="Home" asp-action="Index" class="btn btn-link ps-0 mb-2">&larr; Back to events</a>
+
+    @if (string.IsNullOrEmpty(Model.Event.BannerImageUrl) == false)
+    {
+        <img src="@Model.Event.BannerImageUrl" class="img-fluid rounded mb-3" alt="Banner for @Model.Event.EventName" />
+    }
+
+    <h1>@Model.Event.EventName</h1>
+
+    <p>
+        <span class="badge bg-dark">@Model.Event.EventType</span>
+        <span class="badge bg-secondary">@Model.Event.Distance.ToString("0.##", invariant) km</span>
+    </p>
+
+    <p class="mb-1"><strong>Date:</strong> @Model.Event.EventDate.ToString("dddd, dd MMMM yyyy")</p>
+    <p class="mb-3"><strong>Location:</strong> @Model.Event.Location</p>
+    <p>@(Model.Event.Description ?? "No description has been added yet.")</p>
+
+    <h2 class="mt-4">Categories</h2>
+
+    @if (Model.Categories.Count == 0)
+    {
+        <div class="alert alert-secondary">No categories have been added for this event yet.</div>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Distance</th>
+                    <th>Entry fee</th>
+                    <th>Places</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cat in Model.Categories)
+                {
+                    <tr>
+                        <td>@cat.CategoryName</td>
+                        <td>@cat.Distance.ToString("0.##", invariant) km</td>
+                        <td>R @cat.EntryFee.ToString("0.00", invariant)</td>
+                        <td>@(cat.MaxParticipants != null ? cat.MaxParticipants.ToString() : "No limit")</td>
+                        <td>
+                            @if (role == "Participant")
+                            {
+                                <form asp-controller="Events" asp-action="Enrol" method="post">
+                                    <input type="hidden" name="eventId" value="@Model.Event.EventId" />
+                                    <input type="hidden" name="categoryId" value="@cat.CategoryId" />
+                                    <button type="submit" class="btn btn-success btn-sm">Enrol</button>
+                                </form>
+                            }
+                            else if (role == null)
+                            {
+                                <a asp-controller="Account" asp-action="Login">Log in to enrol</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
