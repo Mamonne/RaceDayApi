@@ -104,6 +104,9 @@ namespace RaceDayApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
+                    b.Property<string>("BannerImageUrl")
+                        .HasColumnType("varchar(500)");
+
                     b.Property<DateTime>("CreatedDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -111,6 +114,9 @@ namespace RaceDayApi.Migrations
 
                     b.Property<string>("Description")
                         .HasColumnType("varchar(1000)");
+
+                    b.Property<decimal>("Distance")
+                        .HasColumnType("decimal(6,2)");
 
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("date");
@@ -233,6 +239,9 @@ namespace RaceDayApi.Migrations
 
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("varchar(20)");
+
+                    b.Property<string>("ProfilePictureUrl")
+                        .HasColumnType("varchar(500)");
 
                     b.Property<string>("Role")
                         .IsRequired()

@@ -24,6 +24,9 @@ namespace RaceDayApi.Models
         [Column(TypeName = "date")]
         public DateTime? DateOfBirth { get; set; }
 
+        [Column(TypeName = "varchar(500)")]
+        public string? ProfilePictureUrl { get; set; }
+
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
 }
