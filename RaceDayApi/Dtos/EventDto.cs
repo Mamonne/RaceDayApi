@@ -6,6 +6,7 @@
         public DateTime EventDate { get; set; }
         public string Location { get; set; } = "";
         public string? Description { get; set; }
+        public decimal Distance { get; set; }
         public string EventType { get; set; } = "";
     }
 }

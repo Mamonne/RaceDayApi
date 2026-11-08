@@ -104,6 +104,11 @@ namespace RaceDayApi.Controllers
                     return BadRequest("Event date cannot be in the past.");
                 }
 
+                if (dto.Distance <= 0)
+                {
+                    return BadRequest("Distance must be greater than 0.");
+                }
+
                 int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
 
                 Event ev = new Event();
@@ -111,6 +116,7 @@ namespace RaceDayApi.Controllers
                 ev.EventName = dto.EventName.Trim();
                 ev.EventDate = dto.EventDate;
                 ev.Location = dto.Location.Trim();
+                ev.Distance = dto.Distance;
                 ev.Description = dto.Description;
                 ev.EventType = eventType;
                 ev.CreatedDate = DateTime.Now;
@@ -158,9 +164,15 @@ namespace RaceDayApi.Controllers
                     return BadRequest("Event type must be Running, Walking or Cycling.");
                 }
 
+                if (dto.Distance <= 0)
+                {
+                    return BadRequest("Distance must be greater than 0.");
+                }
+
                 ev.EventName = dto.EventName.Trim();
                 ev.EventDate = dto.EventDate;
                 ev.Location = dto.Location.Trim();
+                ev.Distance = dto.Distance;
                 ev.Description = dto.Description;
                 ev.EventType = eventType;
 
