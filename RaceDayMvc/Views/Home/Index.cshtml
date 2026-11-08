@@ -1,8 +1,24 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Http
+@{
+    ViewData["Title"] = "Home";
+    string? name = Context.Session.GetString("FullName");
+    string? role = Context.Session.GetString("Role");
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">RaceDay</h1>
+
+    @if (name == null)
+    {
+        <p>You are not logged in.</p>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Log in</a>
+        <a class="btn btn-outline-primary" asp-controller="Account" asp-action="Register">Register</a>
+    }
+    else
+    {
+        <p>Logged in as @name (@role)</p>
+        <form asp-controller="Account" asp-action="Logout" method="post">
+            <button type="submit" class="btn btn-secondary">Log out</button>
+        </form>
+    }
 </div>
