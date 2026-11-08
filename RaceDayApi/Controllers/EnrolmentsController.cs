@@ -161,5 +161,39 @@ namespace RaceDayApi.Controllers
                 return StatusCode(500, "Something went wrong: " + ex.Message);
             }
         }
+        // GET api/users/me/enrolments - Participant's own enrolments
+        [HttpGet("api/users/me/enrolments")]
+        [SessionAuthorize(Roles.Participant)]
+        public async Task<IActionResult> GetMyEnrolments()
+        {
+            try
+            {
+                int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+                var enrolments = await (
+                    from en in this._context.Enrolments
+                    join ev in this._context.Events on en.EventId equals ev.EventId
+                    join c in this._context.Categories on en.CategoryId equals c.CategoryId
+                    where en.ParticipantId == userId
+                    orderby ev.EventDate
+                    select new
+                    {
+                        enrolmentId = en.EnrolmentId,
+                        eventId = ev.EventId,
+                        eventName = ev.EventName,
+                        eventDate = ev.EventDate,
+                        location = ev.Location,
+                        categoryName = c.CategoryName,
+                        registrationDate = en.RegistrationDate,
+                        paymentStatus = en.PaymentStatus
+                    }).ToListAsync();
+
+                return Ok(enrolments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Something went wrong: " + ex.Message);
+            }
+        }
     }
 }

@@ -131,5 +131,43 @@ namespace RaceDayApi.Tests
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+
+        [Fact]
+        public async Task GetMyEnrolments_ShowsOnlyTheParticipantsOwnEnrolments()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient first = await this.CreateLoggedInClient("part1@test.com", "Participant");
+            HttpClient second = await this.CreateLoggedInClient("part2@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+
+            await this.Enrol(first, eventId, categoryId);
+            await this.Enrol(second, eventId, categoryId);
+
+            HttpResponseMessage response = await first.GetAsync("/api/users/me/enrolments");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            JsonElement list = await response.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(1, list.GetArrayLength());
+            Assert.Equal("Pending", list[0].GetProperty("paymentStatus").GetString());
+        }
+
+        [Fact]
+        public async Task GetMyEnrolments_AsOrganiser_Returns403()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+
+            HttpResponseMessage response = await organiser.GetAsync("/api/users/me/enrolments");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetMyEnrolments_WhenNotLoggedIn_Returns401()
+        {
+            HttpResponseMessage response = await this._client.GetAsync("/api/users/me/enrolments");
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
     }
 }
