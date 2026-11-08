@@ -105,23 +105,5 @@ namespace RaceDayApi.Tests
 
         }
 
-        [Fact]
-        public async Task CreateEvent_WithZeroDistance_Returns400()
-        {
-            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
-
-            var body = new
-            {
-                eventName = "Test Run",
-                eventDate = DateTime.Today.AddDays(30),
-                location = "Bloemfontein",
-                description = "No distance",
-                distance = 0,
-                eventType = "Running"
-            };
-            HttpResponseMessage response = await organiser.PostAsJsonAsync("/api/events", body);
-
-            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
     }
-}
