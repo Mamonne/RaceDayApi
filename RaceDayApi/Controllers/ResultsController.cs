@@ -177,7 +177,12 @@ namespace RaceDayApi.Controllers
                         finishTime = r.FinishTime,
                         overallPosition = r.OverallPosition,
                         categoryPosition = r.CategoryPosition,
-                        status = r.Status
+                        status = r.Status,
+                        totalFinishers = (
+                            from r2 in this._context.Results
+                            join en2 in this._context.Enrolments on r2.EnrolmentId equals en2.EnrolmentId
+                            where en2.EventId == ev.EventId && r2.Status == "Finished"
+                            select r2).Count()
                     }).ToListAsync();
 
                 return Ok(results);
@@ -188,4 +193,4 @@ namespace RaceDayApi.Controllers
             }
         }
     }
-}
+    }
