@@ -1,0 +1,117 @@
+﻿@model RaceDayMvc.Models.MyResultsViewModel
+@{
+    ViewData["Title"] = "My results";
+}
+
+@functions {
+    // Turns 1 into "1st", 2 into "2nd", 47 into "47th" and so on
+    string Ordinal(int number)
+    {
+        int lastTwo = number % 100;
+        int lastOne = number % 10;
+
+        if (lastTwo >= 11 && lastTwo <= 13)
+        {
+            return number + "th";
+        }
+        else if (lastOne == 1)
+        {
+            return number + "st";
+        }
+        else if (lastOne == 2)
+        {
+            return number + "nd";
+        }
+        else if (lastOne == 3)
+        {
+            return number + "rd";
+        }
+        else
+        {
+            return number + "th";
+        }
+    }
+
+    // Turns a time span into 01:05:30
+    string FormatTime(TimeSpan time)
+    {
+        return string.Format("{0:00}:{1:00}:{2:00}", (int)time.TotalHours, time.Minutes, time.Seconds);
+    }
+}
+
+<h1 class="mb-3">My results</h1>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Results.Count == 0)
+{
+    <div class="alert alert-secondary">
+        You do not have any race results yet. Results appear here after an organiser has captured them.
+    </div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Finish time</th>
+                <th>Position</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Results)
+            {
+                string badgeClass = "bg-secondary";
+                string statusText = item.Status;
+
+                if (item.Status == "Finished")
+                {
+                    badgeClass = "bg-success";
+                }
+                else if (item.Status == "DNF")
+                {
+                    badgeClass = "bg-warning text-dark";
+                    statusText = "Did not finish";
+                }
+                else if (item.Status == "DSQ")
+                {
+                    badgeClass = "bg-danger";
+                    statusText = "Disqualified";
+                }
+
+                <tr>
+                    <td>@item.EventName</td>
+                    <td>@item.EventDate.ToString("dd MMM yyyy")</td>
+                    <td>@item.CategoryName</td>
+                    <td>
+                        @if (item.FinishTime != null)
+                        {
+                            @FormatTime(item.FinishTime.Value)
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td>
+                        @if (item.Status == "Finished" && item.OverallPosition != null)
+                        {
+                            <span>@Ordinal(item.OverallPosition.Value) out of @item.TotalFinishers finishers</span>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </td>
+                    <td><span class="badge @badgeClass">@statusText</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

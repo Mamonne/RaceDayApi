@@ -68,5 +68,34 @@ namespace RaceDayMvc.Controllers
 
             return RedirectToAction("MyEnrolments");
         }
+
+        public async Task<IActionResult> MyResults()
+        {
+            MyResultsViewModel model = new MyResultsViewModel();
+
+            try
+            {
+                ApiResponse response = await this._api.GetAsync("api/users/me/results");
+
+                if (response.Success)
+                {
+                    List<ResultItem>? items = response.ReadAs<List<ResultItem>>();
+                    if (items != null)
+                    {
+                        model.Results = items;
+                    }
+                }
+                else
+                {
+                    model.ErrorMessage = response.Message;
+                }
+            }
+            catch (Exception)
+            {
+                model.ErrorMessage = "Something went wrong. Please try again.";
+            }
+
+            return View(model);
+        }
     }
 }
