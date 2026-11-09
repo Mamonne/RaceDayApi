@@ -108,6 +108,7 @@ else
                             }
                         </td>
                         <td class="text-nowrap">
+                            <a asp-controller="ManageCategories" asp-action="Index" asp-route-eventId="@item.EventId" class="btn btn-outline-secondary btn-sm">Categories</a>
                             <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-outline-primary btn-sm">Edit</a>
                             <form asp-controller="ManageEvents" asp-action="Delete" asp-route-id="@item.EventId" method="post" class="d-inline"
                                   onsubmit="return confirm('Delete this event? Its categories, enrolments and results will also be deleted.');">
