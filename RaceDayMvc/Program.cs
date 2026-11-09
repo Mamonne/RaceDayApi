@@ -2,6 +2,11 @@ using RaceDayMvc.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Always use "." for decimals, so a distance like 10.5 works on every computer
+System.Globalization.CultureInfo.DefaultThreadCurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.InvariantCulture;
+System.Globalization.CultureInfo.CurrentCulture = System.Globalization.CultureInfo.InvariantCulture;
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

@@ -4,7 +4,10 @@
     var invariant = System.Globalization.CultureInfo.InvariantCulture;
 }
 
-<h1 class="mb-3">Organiser dashboard</h1>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Organiser dashboard</h1>
+    <a asp-controller="ManageEvents" asp-action="Create" class="btn btn-primary">Create event</a>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -77,6 +80,7 @@ else
                     <th>Distance</th>
                     <th>Enrolments</th>
                     <th>When</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -102,6 +106,13 @@ else
                             {
                                 <span class="badge bg-secondary">Past</span>
                             }
+                        </td>
+                        <td class="text-nowrap">
+                            <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-outline-primary btn-sm">Edit</a>
+                            <form asp-controller="ManageEvents" asp-action="Delete" asp-route-id="@item.EventId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this event? Its categories, enrolments and results will also be deleted.');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
                         </td>
                     </tr>
                 }
