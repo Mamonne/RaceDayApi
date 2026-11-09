@@ -195,5 +195,57 @@ namespace RaceDayApi.Controllers
                 return StatusCode(500, "Something went wrong: " + ex.Message);
             }
         }
+        // PUT api/enrolments/5/status - Organiser who owns the event
+        [HttpPut("api/enrolments/{id}/status")]
+        [SessionAuthorize(Roles.Organiser)]
+        public async Task<IActionResult> UpdateStatus(int id, EnrolmentStatusDto dto)
+        {
+            try
+            {
+                Enrolment? enrolment = await this._context.Enrolments.FindAsync(id);
+                if (enrolment == null)
+                {
+                    return NotFound("Enrolment not found.");
+                }
+
+                Event? ev = await this._context.Events.FindAsync(enrolment.EventId);
+                int userId = HttpContext.Session.GetInt32("UserId") ?? 0;
+
+                if (ev == null || ev.OrganiserId != userId)
+                {
+                    return StatusCode(403, "You can only change enrolments for your own events.");
+                }
+
+                string value = dto.PaymentStatus.Trim().ToLower();
+                string? status = null;
+
+                if (value == "pending")
+                {
+                    status = "Pending";
+                }
+                else if (value == "paid")
+                {
+                    status = "Paid";
+                }
+                else if (value == "cancelled")
+                {
+                    status = "Cancelled";
+                }
+
+                if (status == null)
+                {
+                    return BadRequest("Status must be Pending, Paid or Cancelled.");
+                }
+
+                enrolment.PaymentStatus = status;
+                await this._context.SaveChangesAsync();
+
+                return Ok(enrolment);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Something went wrong: " + ex.Message);
+            }
+        }
     }
 }
