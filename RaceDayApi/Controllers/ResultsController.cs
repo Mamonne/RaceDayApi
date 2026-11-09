@@ -171,6 +171,7 @@ namespace RaceDayApi.Controllers
                     select new
                     {
                         resultId = r.ResultId,
+                        enrolmentId = en.EnrolmentId,
                         eventName = ev.EventName,
                         eventDate = ev.EventDate,
                         categoryName = c.CategoryName,
