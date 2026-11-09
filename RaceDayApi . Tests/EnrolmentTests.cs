@@ -131,5 +131,126 @@ namespace RaceDayApi.Tests
 
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
+
+        [Fact]
+        public async Task GetMyEnrolments_ShowsOnlyTheParticipantsOwnEnrolments()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient first = await this.CreateLoggedInClient("part1@test.com", "Participant");
+            HttpClient second = await this.CreateLoggedInClient("part2@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+
+            await this.Enrol(first, eventId, categoryId);
+            await this.Enrol(second, eventId, categoryId);
+
+            HttpResponseMessage response = await first.GetAsync("/api/users/me/enrolments");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            JsonElement list = await response.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(1, list.GetArrayLength());
+            Assert.Equal("Pending", list[0].GetProperty("paymentStatus").GetString());
+        }
+
+        [Fact]
+        public async Task GetMyEnrolments_AsOrganiser_Returns403()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+
+            HttpResponseMessage response = await organiser.GetAsync("/api/users/me/enrolments");
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task GetMyEnrolments_WhenNotLoggedIn_Returns401()
+        {
+            HttpResponseMessage response = await this._client.GetAsync("/api/users/me/enrolments");
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+        private async Task<int> EnrolAndGetEnrolmentId(HttpClient participant, int eventId, int categoryId)
+        {
+            HttpResponseMessage response = await this.Enrol(participant, eventId, categoryId);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+
+            JsonElement json = await response.Content.ReadFromJsonAsync<JsonElement>();
+            return json.GetProperty("enrolmentId").GetInt32();
+        }
+
+        [Fact]
+        public async Task UpdateStatus_AsOwner_Returns200_AndParticipantSeesTheNewStatus()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient participant = await this.CreateLoggedInClient("part@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+            int enrolmentId = await this.EnrolAndGetEnrolmentId(participant, eventId, categoryId);
+
+            var body = new { paymentStatus = "Paid" };
+            HttpResponseMessage response = await organiser.PutAsJsonAsync("/api/enrolments/" + enrolmentId + "/status", body);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            HttpResponseMessage mine = await participant.GetAsync("/api/users/me/enrolments");
+            JsonElement list = await mine.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal("Paid", list[0].GetProperty("paymentStatus").GetString());
+        }
+
+        [Fact]
+        public async Task UpdateStatus_AsDifferentOrganiser_Returns403()
+        {
+            HttpClient owner = await this.CreateLoggedInClient("owner@test.com", "Organiser");
+            HttpClient other = await this.CreateLoggedInClient("other@test.com", "Organiser");
+            HttpClient participant = await this.CreateLoggedInClient("part@test.com", "Participant");
+            int eventId = await this.CreateEvent(owner);
+            int categoryId = await this.CreateCategory(owner, eventId);
+            int enrolmentId = await this.EnrolAndGetEnrolmentId(participant, eventId, categoryId);
+
+            var body = new { paymentStatus = "Paid" };
+            HttpResponseMessage response = await other.PutAsJsonAsync("/api/enrolments/" + enrolmentId + "/status", body);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_AsParticipant_Returns403()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient participant = await this.CreateLoggedInClient("part@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+            int enrolmentId = await this.EnrolAndGetEnrolmentId(participant, eventId, categoryId);
+
+            var body = new { paymentStatus = "Paid" };
+            HttpResponseMessage response = await participant.PutAsJsonAsync("/api/enrolments/" + enrolmentId + "/status", body);
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_WithInvalidStatus_Returns400()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient participant = await this.CreateLoggedInClient("part@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+            int enrolmentId = await this.EnrolAndGetEnrolmentId(participant, eventId, categoryId);
+
+            var body = new { paymentStatus = "Maybe" };
+            HttpResponseMessage response = await organiser.PutAsJsonAsync("/api/enrolments/" + enrolmentId + "/status", body);
+
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task UpdateStatus_ForUnknownEnrolment_Returns404()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+
+            var body = new { paymentStatus = "Paid" };
+            HttpResponseMessage response = await organiser.PutAsJsonAsync("/api/enrolments/9999/status", body);
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }

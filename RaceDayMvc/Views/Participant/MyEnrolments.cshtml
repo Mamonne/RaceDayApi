@@ -1,0 +1,80 @@
+﻿@model RaceDayMvc.Models.MyEnrolmentsViewModel
+@{
+    ViewData["Title"] = "My enrolments";
+}
+
+<h1 class="mb-3">My enrolments</h1>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Enrolments.Count == 0)
+{
+    <div class="alert alert-secondary">
+        You have not entered any events yet.
+        <a asp-controller="Home" asp-action="Index">Find an event</a>
+    </div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Category</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Enrolments)
+            {
+                string badgeClass = "bg-secondary";
+                string statusText = item.PaymentStatus;
+
+                if (item.PaymentStatus == "Paid")
+                {
+                    badgeClass = "bg-success";
+                    statusText = "Confirmed";
+                }
+                else if (item.PaymentStatus == "Pending")
+                {
+                    badgeClass = "bg-warning text-dark";
+                    statusText = "Pending";
+                }
+
+                <tr>
+                    <td>
+                        <a asp-controller="Events" asp-action="Details" asp-route-id="@item.EventId">@item.EventName</a>
+                    </td>
+                    <td>@item.EventDate.ToString("dd MMM yyyy")</td>
+                    <td>@item.Location</td>
+                    <td>@item.CategoryName</td>
+                    <td><span class="badge @badgeClass">@statusText</span></td>
+                    <td>
+                        @if (item.EventDate.Date >= DateTime.Today)
+                        {
+                            <form asp-controller="Participant" asp-action="Cancel" asp-route-id="@item.EnrolmentId" method="post"
+                                  onsubmit="return confirm('Cancel this enrolment?');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

@@ -2,7 +2,7 @@ name: .NET CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, part3-mvc ]
   pull_request:
     branches: [ main ]
 
@@ -22,7 +22,10 @@ jobs:
       - name: Restore packages
         run: dotnet restore
 
-      - name: Build
+      - name: Build the MVC project
+        run: dotnet build RaceDayMvc/RaceDayMvc.csproj --no-restore --configuration Release
+
+      - name: Build the whole solution (API, MVC and tests)
         run: dotnet build --no-restore --configuration Release
 
       - name: Run tests

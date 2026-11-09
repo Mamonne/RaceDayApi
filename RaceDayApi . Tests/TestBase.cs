@@ -43,6 +43,7 @@ namespace RaceDayApi.Tests
                 eventDate = DateTime.Today.AddDays(30),
                 location = "Bloemfontein",
                 description = "A test event",
+                distance = 10,
                 eventType = eventType
             };
         }
@@ -101,6 +102,8 @@ namespace RaceDayApi.Tests
         {
             var body = new { categoryId = categoryId };
             return await participantClient.PostAsJsonAsync("/api/events/" + eventId + "/enrolments", body);
+
+        }
+
         }
     }
-}

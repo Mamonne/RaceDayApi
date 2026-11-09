@@ -1,0 +1,89 @@
+﻿@model RaceDayMvc.Models.EventResultsViewModel
+@{
+    ViewData["Title"] = "Results";
+}
+
+@functions {
+    string FormatTime(TimeSpan time)
+    {
+        return string.Format("{0:00}:{1:00}:{2:00}", (int)time.TotalHours, time.Minutes, time.Seconds);
+    }
+}
+
+<a asp-controller="Organiser" asp-action="Dashboard" class="btn btn-link ps-0 mb-2">&larr; Back to dashboard</a>
+
+<h1 class="mb-1">Results</h1>
+<p class="text-muted mb-3">@Model.EventName</p>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="alert alert-secondary">Nobody is enrolled for this event, so there are no results to capture.</div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Participant</th>
+                <th>Category</th>
+                <th>Finish time</th>
+                <th>Overall position</th>
+                <th>Category position</th>
+                <th>Result</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model.Rows)
+            {
+                <tr>
+                    <td>@row.Enrolment.ParticipantName</td>
+                    <td>@row.Enrolment.CategoryName</td>
+
+                    @if (row.Result == null)
+                    {
+                        <td>-</td>
+                        <td>-</td>
+                        <td>-</td>
+                        <td><span class="badge bg-secondary">No result yet</span></td>
+                        <td>
+                            <a asp-controller="EventResults" asp-action="Capture" asp-route-eventId="@Model.EventId" asp-route-enrolmentId="@row.Enrolment.EnrolmentId" class="btn btn-primary btn-sm">Enter result</a>
+                        </td>
+                    }
+                    else
+                    {
+                        string badgeClass = "bg-success";
+                        string statusText = row.Result.Status;
+
+                        if (row.Result.Status == "DNF")
+                        {
+                            badgeClass = "bg-warning text-dark";
+                            statusText = "Did not finish";
+                        }
+                        else if (row.Result.Status == "DSQ")
+                        {
+                            badgeClass = "bg-danger";
+                            statusText = "Disqualified";
+                        }
+
+                        <td>@(row.Result.FinishTime != null ? FormatTime(row.Result.FinishTime.Value) : "-")</td>
+                        <td>@(row.Result.OverallPosition != null ? row.Result.OverallPosition.ToString() : "-")</td>
+                        <td>@(row.Result.CategoryPosition != null ? row.Result.CategoryPosition.ToString() : "-")</td>
+                        <td><span class="badge @badgeClass">@statusText</span></td>
+                        <td></td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}

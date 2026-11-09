@@ -1,0 +1,59 @@
+﻿@model RaceDayMvc.Models.ManageCategoriesViewModel
+@{
+    ViewData["Title"] = "Categories";
+    var invariant = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<a asp-controller="Organiser" asp-action="Dashboard" class="btn btn-link ps-0 mb-2">&larr; Back to dashboard</a>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Categories: @Model.EventName</h1>
+    <a asp-controller="ManageCategories" asp-action="Create" asp-route-eventId="@Model.EventId" class="btn btn-primary">Add category</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.Categories.Count == 0)
+{
+    <div class="alert alert-secondary">This event has no categories yet. Add one so participants can enrol.</div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Distance</th>
+                <th>Entry fee</th>
+                <th>Places</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cat in Model.Categories)
+            {
+                <tr>
+                    <td>@cat.CategoryName</td>
+                    <td>@cat.Distance.ToString("0.##", invariant) km</td>
+                    <td>R @cat.EntryFee.ToString("0.00", invariant)</td>
+                    <td>@(cat.MaxParticipants != null ? cat.MaxParticipants.ToString() : "No limit")</td>
+                    <td class="text-nowrap">
+                        <a asp-controller="ManageCategories" asp-action="Edit" asp-route-eventId="@Model.EventId" asp-route-id="@cat.CategoryId" class="btn btn-outline-primary btn-sm">Edit</a>
+                        <form asp-controller="ManageCategories" asp-action="Delete" asp-route-eventId="@Model.EventId" asp-route-id="@cat.CategoryId" method="post" class="d-inline"
+                              onsubmit="return confirm('Delete this category?');">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

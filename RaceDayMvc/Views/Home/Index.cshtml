@@ -1,0 +1,81 @@
+﻿@model RaceDayMvc.Models.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Upcoming events";
+    string? role = Context.Session.GetString("Role");
+    var invariant = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<h1 class="mb-3">Upcoming events</h1>
+
+@if (role == null)
+{
+    <div class="alert alert-info">
+        <a asp-controller="Account" asp-action="Login">Log in</a> or
+        <a asp-controller="Account" asp-action="Register">register</a> to enter an event.
+    </div>
+}
+
+<form method="get" asp-controller="Home" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-md-4">
+        <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="Search by name or location" />
+    </div>
+    <div class="col-md-2">
+        <select name="eventType" class="form-select">
+            <option value="">All types</option>
+            <option value="Running" selected="@(Model.EventType == "Running")">Running</option>
+            <option value="Walking" selected="@(Model.EventType == "Walking")">Walking</option>
+            <option value="Cycling" selected="@(Model.EventType == "Cycling")">Cycling</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="number" step="0.1" min="0" name="minDistance" value="@(Model.MinDistance?.ToString(invariant))" class="form-control" placeholder="Min km" />
+    </div>
+    <div class="col-md-2">
+        <input type="number" step="0.1" min="0" name="maxDistance" value="@(Model.MaxDistance?.ToString(invariant))" class="form-control" placeholder="Max km" />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">Filter</button>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-link">Clear</a>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Events.Count == 0)
+{
+    <div class="alert alert-secondary">No upcoming events were found.</div>
+}
+else
+{
+    <div class="row">
+        @foreach (var item in Model.Events)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    @if (string.IsNullOrEmpty(item.BannerImageUrl) == false)
+                    {
+                        <img src="@item.BannerImageUrl" class="card-img-top" alt="Banner for @item.EventName" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white text-center py-5">No banner</div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@item.EventName</h5>
+                        <p class="card-text mb-1">@item.EventDate.ToString("dd MMM yyyy")</p>
+                        <p class="card-text mb-1">@item.Location</p>
+                        <p class="card-text">
+                            <span class="badge bg-dark">@item.EventType</span>
+                            <span class="badge bg-secondary">@item.Distance.ToString("0.##", invariant) km</span>
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="Events" asp-action="Details" asp-route-id="@item.EventId" class="btn btn-primary btn-sm">View details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

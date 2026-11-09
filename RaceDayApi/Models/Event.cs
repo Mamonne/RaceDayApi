@@ -20,8 +20,14 @@ namespace RaceDayApi.Models
         [Column(TypeName = "varchar(1000)")]
         public string? Description { get; set; }
 
+        [Column(TypeName = "decimal(6,2)")]
+        public decimal Distance { get; set; }
+
         [Column(TypeName = "varchar(20)")]
         public string EventType { get; set; } = "";   // Running, Walking or Cycling
+
+        [Column(TypeName = "varchar(500)")]
+        public string? BannerImageUrl { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }

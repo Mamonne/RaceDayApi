@@ -1,0 +1,99 @@
+﻿@model RaceDayMvc.Models.EventEnrolmentsViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+    int confirmedCount = Model.Enrolments.Count(e => e.PaymentStatus == "Paid");
+    int pendingCount = Model.Enrolments.Count(e => e.PaymentStatus == "Pending");
+    int cancelledCount = Model.Enrolments.Count(e => e.PaymentStatus == "Cancelled");
+}
+
+<a asp-controller="Organiser" asp-action="Dashboard" class="btn btn-link ps-0 mb-2">&larr; Back to dashboard</a>
+
+<h1 class="mb-1">Enrolments</h1>
+<p class="text-muted mb-3">@Model.EventName</p>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<p>
+    <span class="badge bg-dark">@Model.Enrolments.Count total</span>
+    <span class="badge bg-success">@confirmedCount confirmed</span>
+    <span class="badge bg-warning text-dark">@pendingCount pending</span>
+    <span class="badge bg-secondary">@cancelledCount cancelled</span>
+</p>
+
+@if (Model.Enrolments.Count == 0)
+{
+    <div class="alert alert-secondary">Nobody has enrolled for this event yet.</div>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Participant</th>
+                <th>Category</th>
+                <th>Registered</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Enrolments)
+            {
+                string badgeClass = "bg-secondary";
+                string statusText = item.PaymentStatus;
+
+                if (item.PaymentStatus == "Paid")
+                {
+                    badgeClass = "bg-success";
+                    statusText = "Confirmed";
+                }
+                else if (item.PaymentStatus == "Pending")
+                {
+                    badgeClass = "bg-warning text-dark";
+                    statusText = "Pending";
+                }
+
+                <tr>
+                    <td>@item.ParticipantName</td>
+                    <td>@item.CategoryName</td>
+                    <td>@item.RegistrationDate.ToString("dd MMM yyyy")</td>
+                    <td><span class="badge @badgeClass">@statusText</span></td>
+                    <td class="text-nowrap">
+                        @if (item.PaymentStatus != "Paid")
+                        {
+                            <form asp-controller="EventEnrolments" asp-action="SetStatus" asp-route-eventId="@Model.EventId" asp-route-id="@item.EnrolmentId" method="post" class="d-inline">
+                                <input type="hidden" name="status" value="Paid" />
+                                <button type="submit" class="btn btn-success btn-sm">Confirm</button>
+                            </form>
+                        }
+
+                        @if (item.PaymentStatus != "Pending")
+                        {
+                            <form asp-controller="EventEnrolments" asp-action="SetStatus" asp-route-eventId="@Model.EventId" asp-route-id="@item.EnrolmentId" method="post" class="d-inline">
+                                <input type="hidden" name="status" value="Pending" />
+                                <button type="submit" class="btn btn-outline-warning btn-sm">Set to pending</button>
+                            </form>
+                        }
+
+                        @if (item.PaymentStatus != "Cancelled")
+                        {
+                            <form asp-controller="EventEnrolments" asp-action="SetStatus" asp-route-eventId="@Model.EventId" asp-route-id="@item.EnrolmentId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Cancel this enrolment?');">
+                                <input type="hidden" name="status" value="Cancelled" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

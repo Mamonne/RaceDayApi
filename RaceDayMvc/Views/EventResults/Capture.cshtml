@@ -1,0 +1,53 @@
+﻿@model RaceDayMvc.Models.ResultFormViewModel
+@{
+    ViewData["Title"] = "Enter result";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-1">Enter a result</h1>
+        <p class="text-muted mb-4">@ViewData["ParticipantName"]</p>
+
+        <form asp-controller="EventResults" asp-action="Capture" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input type="hidden" asp-for="EventId" />
+            <input type="hidden" asp-for="EnrolmentId" />
+
+            <div class="mb-3">
+                <label asp-for="Status" class="form-label">Result</label>
+                <select asp-for="Status" class="form-select">
+                    <option value="Finished">Finished</option>
+                    <option value="DNF">Did not finish</option>
+                    <option value="DSQ">Disqualified</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FinishTime" class="form-label"></label>
+                <input asp-for="FinishTime" class="form-control" placeholder="For example 01:05:30" />
+                <span asp-validation-for="FinishTime" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="OverallPosition" class="form-label"></label>
+                    <input asp-for="OverallPosition" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="OverallPosition" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CategoryPosition" class="form-label"></label>
+                    <input asp-for="CategoryPosition" class="form-control" type="number" min="1" />
+                    <span asp-validation-for="CategoryPosition" class="text-danger"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save result</button>
+            <a asp-controller="EventResults" asp-action="Index" asp-route-eventId="@Model.EventId" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

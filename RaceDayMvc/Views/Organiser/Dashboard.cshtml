@@ -1,0 +1,125 @@
+﻿@model RaceDayMvc.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var invariant = System.Globalization.CultureInfo.InvariantCulture;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0">Organiser dashboard</h1>
+    <a asp-controller="ManageEvents" asp-action="Create" class="btn btn-primary">Create event</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.TotalEvents</h2>
+                    <p class="card-text text-muted mb-0">Events created</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.TotalEnrolments</h2>
+                    <p class="card-text text-muted mb-0">Total enrolments</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.UpcomingEvents</h2>
+                    <p class="card-text text-muted mb-0">Upcoming events</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h2 class="card-title fs-4 pt-2">
+                        @(Model.NextEventDate != null ? Model.NextEventDate.Value.ToString("dd MMM yyyy") : "None")
+                    </h2>
+                    <p class="card-text text-muted mb-0">Next event</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="mb-3">My events</h2>
+
+    @if (Model.Events.Count == 0)
+    {
+        <div class="alert alert-secondary">You have not created any events yet.</div>
+    }
+    else
+    {
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Type</th>
+                    <th>Distance</th>
+                    <th>Enrolments</th>
+                    <th>When</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Events)
+                {
+                    bool isUpcoming = item.EventDate.Date >= DateTime.Today;
+
+                    <tr>
+                        <td>
+                            <a asp-controller="Events" asp-action="Details" asp-route-id="@item.EventId">@item.EventName</a>
+                        </td>
+                        <td>@item.EventDate.ToString("dd MMM yyyy")</td>
+                        <td>@item.Location</td>
+                        <td><span class="badge bg-dark">@item.EventType</span></td>
+                        <td>@item.Distance.ToString("0.##", invariant) km</td>
+                        <td>@item.TotalEnrolments</td>
+                        <td>
+                            @if (isUpcoming)
+                            {
+                                <span class="badge bg-success">Upcoming</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Past</span>
+                            }
+                        </td>
+                        <td class="text-nowrap">
+                            <a asp-controller="EventEnrolments" asp-action="Index" asp-route-eventId="@item.EventId" class="btn btn-outline-dark btn-sm">Enrolments</a>
+                            <a asp-controller="EventResults" asp-action="Index" asp-route-eventId="@item.EventId" class="btn btn-outline-success btn-sm">Results</a>
+                            <a asp-controller="ManageCategories" asp-action="Index" asp-route-eventId="@item.EventId" class="btn btn-outline-secondary btn-sm">Categories</a>
+                            <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@item.EventId" class="btn btn-outline-primary btn-sm">Edit</a>
+                            <form asp-controller="ManageEvents" asp-action="Delete" asp-route-id="@item.EventId" method="post" class="d-inline"
+                                  onsubmit="return confirm('Delete this event? Its categories, enrolments and results will also be deleted.');">
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}

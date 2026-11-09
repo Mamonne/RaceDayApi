@@ -219,5 +219,30 @@ namespace RaceDayApi.Tests
 
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
+
+        [Fact]
+        public async Task GetMyResults_IncludesTotalFinishersForTheEvent()
+        {
+            HttpClient organiser = await this.CreateLoggedInClient("org@test.com", "Organiser");
+            HttpClient first = await this.CreateLoggedInClient("part1@test.com", "Participant");
+            HttpClient second = await this.CreateLoggedInClient("part2@test.com", "Participant");
+            int eventId = await this.CreateEvent(organiser);
+            int categoryId = await this.CreateCategory(organiser, eventId);
+
+            int firstEnrolment = await this.EnrolAndGetId(first, eventId, categoryId);
+            int secondEnrolment = await this.EnrolAndGetId(second, eventId, categoryId);
+
+            // One participant finishes, the other does not finish (DNF)
+            await organiser.PostAsJsonAsync("/api/events/" + eventId + "/results", this.MakeResultBody(firstEnrolment));
+            var dnfBody = new { enrolmentId = secondEnrolment, status = "DNF" };
+            await organiser.PostAsJsonAsync("/api/events/" + eventId + "/results", dnfBody);
+
+            HttpResponseMessage response = await first.GetAsync("/api/users/me/results");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            JsonElement list = await response.Content.ReadFromJsonAsync<JsonElement>();
+            Assert.Equal(1, list.GetArrayLength());
+            Assert.Equal(1, list[0].GetProperty("totalFinishers").GetInt32());
+        }
     }
 }
